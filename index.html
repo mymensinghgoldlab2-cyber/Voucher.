@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<title>MGL Official Voucher</title>
+
+<style>
+@page { size: A4; margin: 15mm; }
+
+body { 
+    font-family: Arial; 
+    font-size: 14px;
+    background: linear-gradient(135deg,#f0f4ff,#f9fbff,#eef2ff);
+    min-height:100vh;
+}
+
+.container { 
+    width: 100%; 
+    max-width: 800px; 
+    margin: 30px auto; 
+    background: white;
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+}
+
+h2 { text-align:center; margin-bottom:20px; }
+
+.row { display: flex; gap: 10px; margin-bottom: 20px; }
+.row div { flex: 1; }
+
+input {
+    width: 100%;
+    border: none;
+    border-bottom: 1px solid black;
+    outline: none;
+    background: transparent;
+}
+
+.signature-sub, .signature {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+}
+
+.signature-sub div, .signature div { width: 45%; }
+
+table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+table, th, td { border: 1px solid black; }
+th, td { padding: 6px; text-align: center; }
+
+.total { text-align: right; margin-top: 10px; font-weight: bold; }
+.total-inword { text-align: right; font-style: italic; margin-top: 5px; }
+
+button { 
+    margin-top: 10px; 
+    padding: 6px 12px; 
+    cursor: pointer; 
+    border: none;
+    border-radius: 5px;
+    background: #4a6cf7;
+    color: white;
+}
+button:hover { background:#3451d1; }
+
+/* ===== Developer Badge ===== */
+.developer-badge{
+    position: fixed;
+    bottom: 15px;
+    right: 15px;
+    text-align: center;
+    opacity: 0.85;
+}
+.developer-badge img{
+    width: 80px;
+    display: block;
+}
+.developer-badge span{
+    font-size: 11px;
+    font-weight: bold;
+}
+
+/* ===== Login ===== */
+#loginDiv {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.6);
+    display: flex; justify-content: center; align-items: center;
+    z-index: 9999;
+}
+
+#loginBox {
+    background: white;
+    padding: 30px;
+    border-radius: 8px;
+    text-align: center;
+}
+
+/* ===== PRINT MODE ===== */
+@media print {
+    body { background: white !important; }
+    .container {
+        box-shadow: none !important;
+        border-radius: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    button { display:none; }
+    .developer-badge{ display:none; }
+}
+</style>
+</head>
+
+<body>
+
+<!-- Developer Badge -->
+<div class="developer-badge">
+    <img src="developer.png">
+    <span>Creator</span>
+</div>
+
+<!-- ===== Login ===== -->
+<div id="loginDiv">
+<div id="loginBox">
+<h3>Admin Login</h3>
+<input type="password" id="adminPass" placeholder="Enter Password"><br>
+<button onclick="checkLogin()">Login</button>
+<p style="color:red;" id="loginMsg"></p>
+</div>
+</div>
+
+<div class="container" id="mainContainer" style="display:none;">
+
+<h2>MGL Official Voucher</h2>
+
+<div class="row">
+<div>Voucher No<input id="voucher"></div>
+<div>Purpose<input id="purpose"></div>
+<div>MGL1/2<input id="mgl"></div>
+<div>Date<input id="date" readonly></div>
+</div>
+
+<div class="signature-sub">
+<div>Approval Given By<input id="approvalBy"></div>
+<div>Receiver Taken By<input id="receiverBy"></div>
+</div>
+
+<table id="table">
+<tr>
+<th>SL</th>
+<th>Description</th>
+<th>Amount (৳)</th>
+</tr>
+</table>
+
+<div class="total">
+Total: <span id="total">0</span> ৳
+</div>
+
+<div class="total-inword">
+In Words: <span id="totalWords">শূন্য টাকা মাত্র</span>
+</div>
+
+<button onclick="addRow()">Add Row</button>
+<button onclick="removeLastRow()">Remove Last</button>
+<button onclick="saveVoucher()">Save</button>
+<button onclick="searchVoucher()">Search</button>
+<button onclick="newVoucher()">New Voucher</button>
+<button onclick="printVoucher()">Print</button>
+
+<div class="signature">
+<div>Approval<hr></div>
+<div>Receiver<hr></div>
+</div>
+
+</div>
+
+<script>
+
+/* ===== FULL ORIGINAL WORKING JAVASCRIPT ===== */
+
+function checkLogin(){
+    var pass = document.getElementById("adminPass").value;
+    if(pass === "MGL"){
+        document.getElementById("loginDiv").style.display="none";
+        document.getElementById("mainContainer").style.display="block";
+        initVoucher();
+    } else {
+        document.getElementById("loginMsg").innerText="Incorrect Password!";
+    }
+}
+
+function numberToBangla(n){
+var nums=["শূন্য","এক","দুই","তিন","চার","পাঁচ","ছয়","সাত","আট","নয়",
+"দশ","এগারো","বারো","তেরো","চোদ্দ","পনেরো","ষোল","সতেরো","আঠারো","উনিশ",
+"বিশ","একুশ","বাইশ","তেইশ","চব্বিশ","পঁচিশ","ছাব্বিশ","সাতাশ","আটাশ","ঊনত্রিশ",
+"ত্রিশ","একত্রিশ","বত্রিশ","তেত্রিশ","চৌত্রিশ","পঁইত্রিশ","ছত্রিশ","সাইত্রিশ","আটত্রিশ","ঊনচল্লিশ",
+"চল্লিশ","একচল্লিশ","বিয়াল্লিশ","তেতাল্লিশ","চুয়াল্লিশ","পঁয়তাল্লিশ","ছিয়াল্লিশ","সাতচল্লিশ","আটচল্লিশ","ঊনপঞ্চাশ",
+"পঞ্চাশ","একান্ন","বাহান্ন","তিপ্পান্ন","চুয়ান্ন","পঁঞ্চান্ন","ছাপ্পান্ন","সাতান্ন","আটান্ন","ঊনষাট",
+"ষাট","একষট্টি","বাষট্টি","তেষট্টি","চৌষট্টি","পঁয়ষট্টি","ছেষট্টি","সাতষট্টি","আটষট্টি","ঊনসত্তর",
+"সত্তর","একাত্তর","বাহাত্তর","তিয়াত্তর","চুয়াত্তর","পঁচাত্তর","ছিয়াত্তর","সাতাত্তর","আটাত্তর","ঊনআশি",
+"আশি","একাশি","বিরাশি","তিরাশি","চুরাশি","পঁচাশি","ছিয়াশি","সাতাশি","আটাশি","ঊননব্বই",
+"নব্বই","একানব্বই","বিরানব্বই","তিরানব্বই","চুরানব্বই","পঁচানব্বই","ছিয়ানব্বই","সাতানব্বই","আটানব্বই","নিরানব্বই"];
+
+if(n<=99) return nums[n];
+if(n<1000) return numberToBangla(Math.floor(n/100))+" শত "+(n%100?numberToBangla(n%100):"");
+if(n<100000) return numberToBangla(Math.floor(n/1000))+" হাজার "+(n%1000?numberToBangla(n%1000):"");
+if(n<10000000) return numberToBangla(Math.floor(n/100000))+" লাখ "+(n%100000?numberToBangla(n%100000):"");
+return n;
+}
+
+function generateVoucherNumber(){
+let last=localStorage.getItem("lastVoucherNumber");
+if(!last){ last=60; }
+else{ last=Number(last)+1; }
+localStorage.setItem("lastVoucherNumber",last);
+return "V-"+last;
+}
+
+var table=document.getElementById("table");
+
+function addRow(desc="",amount=""){
+var row=table.insertRow();
+row.insertCell(0).innerHTML=table.rows.length-1;
+row.insertCell(1).innerHTML="<input value='"+desc+"'>";
+row.insertCell(2).innerHTML="<input type='number' value='"+amount+"' oninput='calc()'>";
+}
+
+function removeLastRow(){
+if(table.rows.length>2){
+table.deleteRow(-1);
+calc();
+}
+}
+
+function clearTable(){
+while(table.rows.length>1){
+table.deleteRow(1);
+}
+}
+
+function calc(){
+var inputs=table.querySelectorAll("input[type=number]");
+var total=0;
+inputs.forEach(i=> total+=Number(i.value));
+document.getElementById("total").innerText=total;
+document.getElementById("totalWords").innerText=numberToBangla(total)+" টাকা মাত্র";
+}
+
+function saveVoucher(){
+var voucher=document.getElementById("voucher").value.trim();
+if(voucher===""){ alert("Voucher No খালি রাখা যাবে না!"); return false; }
+
+var rows=table.querySelectorAll("tr");
+let items=[];
+let hasValid=false;
+
+for(var i=1;i<rows.length;i++){
+var desc=rows[i].cells[1].querySelector("input").value.trim();
+var amount=rows[i].cells[2].querySelector("input").value.trim();
+
+if(desc!=="" && amount!==""){
+hasValid=true;
+items.push({desc,amount});
+}
+}
+
+if(!hasValid){
+alert("Description এবং Amount খালি থাকলে Save হবে না!");
+return false;
+}
+
+var data={
+purpose:purpose.value,
+mgl:mgl.value,
+approval:approvalBy.value,
+receiver:receiverBy.value,
+items:items
+};
+
+localStorage.setItem(voucher,JSON.stringify(data));
+alert("Saved Successfully!");
+return true;
+}
+
+function printVoucher(){
+if(saveVoucher()){
+window.print();
+newVoucher();
+}
+}
+
+function searchVoucher(){
+var voucher=prompt("Enter Voucher No:");
+if(!voucher) return;
+
+var data=localStorage.getItem(voucher);
+if(!data){ alert("Not Found!"); return; }
+
+data=JSON.parse(data);
+
+clearTable();
+
+document.getElementById("voucher").value=voucher;
+purpose.value=data.purpose;
+mgl.value=data.mgl;
+approvalBy.value=data.approval;
+receiverBy.value=data.receiver;
+
+data.items.forEach(i=> addRow(i.desc,i.amount));
+calc();
+}
+
+function newVoucher(){
+document.querySelectorAll("input").forEach(i=>{
+if(!i.hasAttribute("readonly")) i.value="";
+});
+
+clearTable();
+
+document.getElementById("voucher").value=generateVoucherNumber();
+
+var d=new Date();
+document.getElementById("date").value=d.getDate()+"-"+(d.getMonth()+1)+"-"+d.getFullYear();
+
+addRow();
+calc();
+}
+
+function initVoucher(){
+document.getElementById("voucher").value=generateVoucherNumber();
+var d=new Date();
+document.getElementById("date").value=d.getDate()+"-"+(d.getMonth()+1)+"-"+d.getFullYear();
+addRow();
+}
+
+</script>
+
+</body>
+
+</html>
